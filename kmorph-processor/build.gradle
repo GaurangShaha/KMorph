@@ -1,11 +1,27 @@
 apply plugin: 'java-library'
 apply plugin: 'kotlin'
+apply plugin: 'com.novoda.bintray-release'
+
+publish {
+
+    def groupProjectID = 'com.kmorph'
+    def artifactProjectID = 'kmorph-processor'
+    def publishVersionID = '1.0.0'
+
+    userOrg = 'gaurangshaha'
+    repoName = 'KMorph-Processor'
+    groupId = groupProjectID
+    artifactId = artifactProjectID
+    publishVersion = publishVersionID
+    desc = 'A Kotlin library which auto-generate code to copy your data between classes.'
+    website = 'https://github.com/GaurangShaha/KMorph'
+}
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.squareup:kotlinpoet:1.0.0-RC1'
-    compile project(path: ':kmorph-annotations')
+    implementation 'com.kmorph:kmorph-annotation:1.0.0'
 }
 
 sourceCompatibility = "1.7"
