@@ -1,0 +1,1 @@
+include ':app', ':kmorph-annotations', ':kmorph-processor'
