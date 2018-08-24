@@ -3,7 +3,8 @@ package com.kmorph.processor.generator
 import com.kmorph.processor.constant.Constant
 import com.kmorph.processor.model.ClassMetaData
 import com.kmorph.processor.model.GetterSetterAndFieldTransformMetaData
-import com.kmorph.processor.model.ParameterMatchType
+import com.kmorph.processor.model.ParameterMatchType.*
+import com.kmorph.processor.util.getPrimitiveDataType
 import com.kmorph.processor.util.hasCompatibleDataType
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.asClassName
@@ -23,14 +24,16 @@ class MorphToTargetUsingGetterSetterFunctionSpec : FunctionSpec {
                 return@forEach
 
             when (it.value.setterElement!!.parameters[0].asType().hasCompatibleDataType(probableMatchFromSource.getterElement.returnType)) {
-                ParameterMatchType.SAME_CLASS -> morphToTargetFunSpecBuilder.addStatement("target.${it.value.fieldName} = ${probableMatchFromSource.fieldName}")
-                ParameterMatchType.UPCAST_NEEDED, ParameterMatchType.DOWNCAST_NEEDED -> morphToTargetFunSpecBuilder.addStatement("target.${it.value.fieldName} = ${probableMatchFromSource.fieldName}.to${it.value.setterElement?.parameters?.get(0)?.asType().toString().capitalize()}()")
+                SAME_CLASS -> morphToTargetFunSpecBuilder.addStatement("target.${it.value.fieldName} = ${probableMatchFromSource.fieldName}")
+                UPCAST_NEEDED_WITH_BOTH_PRIMITIVE, DOWNCAST_NEEDED_WITH_BOTH_PRIMITIVE -> morphToTargetFunSpecBuilder.addStatement("target.${it.value.fieldName} = ${probableMatchFromSource.fieldName}.to${it.value.setterElement?.parameters?.get(0)?.asType().toString().capitalize()}()")
+                UPCAST_NEEDED_WITH_BOTH_WRAPPER_CLASS, DOWNCAST_NEEDED_WITH_BOTH_WRAPPER_CLASS -> morphToTargetFunSpecBuilder.addStatement("target.${it.value.fieldName} = ${probableMatchFromSource.fieldName}?.to${it.value.setterElement?.parameters?.get(0)?.asType()?.getPrimitiveDataType()?.capitalize()}()")
                 else -> {
                     if (probableMatchFromSource.fieldTransformerElement != null) {
                         ElementFilter.methodsIn(probableMatchFromSource.fieldTransformerElement.enclosedElements).filter { it.simpleName.toString() == Constant.TRANSFORM || it.simpleName.toString() == Constant.REVERSE_TRANSFORM }.forEach { transformerMethod ->
                             when (it.value.setterElement!!.parameters[0].asType().hasCompatibleDataType(transformerMethod.returnType)) {
-                                ParameterMatchType.SAME_CLASS -> morphToTargetFunSpecBuilder.addStatement("target.${it.value.fieldName} = ${probableMatchFromSource.fieldTransformerElement.qualifiedName}().${transformerMethod.simpleName}(${probableMatchFromSource.fieldName})")
-                                ParameterMatchType.UPCAST_NEEDED, ParameterMatchType.DOWNCAST_NEEDED -> morphToTargetFunSpecBuilder.addStatement("target.${it.value.fieldName} = ${probableMatchFromSource.fieldTransformerElement.qualifiedName}().${transformerMethod.simpleName}(${probableMatchFromSource.fieldName}.to${it.value.setterElement?.parameters?.get(0)?.asType().toString().capitalize()}())")
+                                SAME_CLASS -> morphToTargetFunSpecBuilder.addStatement("target.${it.value.fieldName} = ${probableMatchFromSource.fieldTransformerElement.qualifiedName}().${transformerMethod.simpleName}(${probableMatchFromSource.fieldName})")
+                                UPCAST_NEEDED_WITH_BOTH_PRIMITIVE, DOWNCAST_NEEDED_WITH_BOTH_PRIMITIVE -> morphToTargetFunSpecBuilder.addStatement("target.${it.value.fieldName} = ${probableMatchFromSource.fieldTransformerElement.qualifiedName}().${transformerMethod.simpleName}(${probableMatchFromSource.fieldName}.to${it.value.setterElement?.parameters?.get(0)?.asType().toString().capitalize()}())")
+                                UPCAST_NEEDED_WITH_BOTH_WRAPPER_CLASS, DOWNCAST_NEEDED_WITH_BOTH_WRAPPER_CLASS -> morphToTargetFunSpecBuilder.addStatement("target.${it.value.fieldName} = ${probableMatchFromSource.fieldTransformerElement.qualifiedName}().${transformerMethod.simpleName}(${probableMatchFromSource.fieldName}?.to${it.value.setterElement?.parameters?.get(0)?.asType()?.getPrimitiveDataType()?.capitalize()}())")
                                 else -> {
                                 }
                             }

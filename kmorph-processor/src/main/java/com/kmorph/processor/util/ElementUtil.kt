@@ -191,22 +191,37 @@ private fun TypeElement.getConstructor(): ExecutableElement? {
 }
 
 fun TypeMirror.hasCompatibleDataType(targetTypeMirror: TypeMirror): ParameterMatchType {
-    if (this.toString() == targetTypeMirror.toString()) {
+    if (toString() == targetTypeMirror.toString()) {
         return ParameterMatchType.SAME_CLASS
     }
 
-    if (this.kind.isPrimitive && targetTypeMirror.kind.isPrimitive) {
-        if (CastingInfo.upCastingHashMap[this.toString()]?.contains(targetTypeMirror.toString()) == true) {
-            return ParameterMatchType.UPCAST_NEEDED
-        } else if (CastingInfo.downCastingHashMap[this.toString()]?.contains(targetTypeMirror.toString()) == true) {
-            return ParameterMatchType.DOWNCAST_NEEDED
+    if (kind.isPrimitive && targetTypeMirror.kind.isPrimitive) {
+        if (CastingInfo.upCastingHashMap[toString()]?.contains(targetTypeMirror.toString()) == true) {
+            return ParameterMatchType.UPCAST_NEEDED_WITH_BOTH_PRIMITIVE
+        } else if (CastingInfo.downCastingHashMap[toString()]?.contains(targetTypeMirror.toString()) == true) {
+            return ParameterMatchType.DOWNCAST_NEEDED_WITH_BOTH_PRIMITIVE
         }
     }
 
-    if ((this.kind.isPrimitive && targetTypeMirror.toString() == CastingInfo.primitiveWrapperClassHashMap[this.toString()])
-            || (targetTypeMirror.kind.isPrimitive && this.toString() == CastingInfo.primitiveWrapperClassHashMap[targetTypeMirror.toString()])) {
+    if ((kind.isPrimitive && targetTypeMirror.toString() == CastingInfo.primitiveWrapperClassHashMap[toString()]) || (targetTypeMirror.kind.isPrimitive && toString() == CastingInfo.primitiveWrapperClassHashMap[targetTypeMirror.toString()])) {
         return ParameterMatchType.SAME_CLASS
     }
 
+    if (!kind.isPrimitive && !targetTypeMirror.kind.isPrimitive) {
+        if (CastingInfo.upCastingHashMapForWrapperClass[toString()]?.contains(targetTypeMirror.toString()) == true) {
+            return ParameterMatchType.UPCAST_NEEDED_WITH_BOTH_WRAPPER_CLASS
+        } else if (CastingInfo.downCastingHashMapForWrapperClass[toString()]?.contains(targetTypeMirror.toString()) == true) {
+            return ParameterMatchType.DOWNCAST_NEEDED_WITH_BOTH_WRAPPER_CLASS
+        }
+    }
+
     return ParameterMatchType.NO_MATCH
+}
+
+fun TypeMirror.getPrimitiveDataType(): String {
+    CastingInfo.primitiveWrapperClassHashMap.forEach {
+        if (it.value == toString())
+            return it.key
+    }
+    return toString()
 }

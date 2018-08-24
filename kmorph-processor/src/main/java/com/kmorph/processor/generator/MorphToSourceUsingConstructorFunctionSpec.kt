@@ -3,6 +3,7 @@ package com.kmorph.processor.generator
 import com.kmorph.processor.constant.Constant
 import com.kmorph.processor.model.ClassMetaData
 import com.kmorph.processor.model.ParameterMatchType
+import com.kmorph.processor.util.getPrimitiveDataType
 import com.kmorph.processor.util.hasCompatibleDataType
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.asClassName
@@ -31,13 +32,22 @@ class MorphToSourceUsingConstructorFunctionSpec : FunctionSpec {
                     morphToSourceStringBuilder.append(probableMatchFromTarget.fieldName)
                     firstVariableInConstructor = false
                 }
-                ParameterMatchType.DOWNCAST_NEEDED, ParameterMatchType.UPCAST_NEEDED -> {
+                ParameterMatchType.DOWNCAST_NEEDED_WITH_BOTH_PRIMITIVE, ParameterMatchType.UPCAST_NEEDED_WITH_BOTH_PRIMITIVE -> {
                     if (!firstVariableInConstructor)
                         morphToSourceStringBuilder.append(", ")
 
                     if (startUsingNamedArgument)
                         morphToSourceStringBuilder.append("${it.simpleName} = ")
                     morphToSourceStringBuilder.append("${probableMatchFromTarget.fieldName}.to${it.asType().toString().capitalize()}()")
+                    firstVariableInConstructor = false
+                }
+                ParameterMatchType.DOWNCAST_NEEDED_WITH_BOTH_WRAPPER_CLASS, ParameterMatchType.UPCAST_NEEDED_WITH_BOTH_WRAPPER_CLASS -> {
+                    if (!firstVariableInConstructor)
+                        morphToSourceStringBuilder.append(", ")
+
+                    if (startUsingNamedArgument)
+                        morphToSourceStringBuilder.append("${it.simpleName} = ")
+                    morphToSourceStringBuilder.append("${probableMatchFromTarget.fieldName}?.to${it.asType().getPrimitiveDataType().capitalize()}()")
                     firstVariableInConstructor = false
                 }
                 else -> {
@@ -56,13 +66,23 @@ class MorphToSourceUsingConstructorFunctionSpec : FunctionSpec {
                                     isValidFieldTransformerFound = true
                                     firstVariableInConstructor = false
                                 }
-                                ParameterMatchType.DOWNCAST_NEEDED, ParameterMatchType.UPCAST_NEEDED -> {
+                                ParameterMatchType.DOWNCAST_NEEDED_WITH_BOTH_PRIMITIVE, ParameterMatchType.UPCAST_NEEDED_WITH_BOTH_PRIMITIVE -> {
                                     if (!firstVariableInConstructor)
                                         morphToSourceStringBuilder.append(", ")
 
                                     if (startUsingNamedArgument)
                                         morphToSourceStringBuilder.append("${it.simpleName} = ")
-                                    morphToSourceStringBuilder.append("${transformerElement.qualifiedName}().${transformerMethod.simpleName}(${probableMatchFromTarget.fieldName}.to${transformerMethod.parameters[0].asType().kind.toString().capitalize()}())")
+                                    morphToSourceStringBuilder.append("${transformerElement.qualifiedName}().${transformerMethod.simpleName}(${probableMatchFromTarget.fieldName}.to${transformerMethod.parameters[0].asType().toString().capitalize()}())")
+                                    isValidFieldTransformerFound = true
+                                    firstVariableInConstructor = false
+                                }
+                                ParameterMatchType.DOWNCAST_NEEDED_WITH_BOTH_WRAPPER_CLASS, ParameterMatchType.UPCAST_NEEDED_WITH_BOTH_WRAPPER_CLASS -> {
+                                    if (!firstVariableInConstructor)
+                                        morphToSourceStringBuilder.append(", ")
+
+                                    if (startUsingNamedArgument)
+                                        morphToSourceStringBuilder.append("${it.simpleName} = ")
+                                    morphToSourceStringBuilder.append("${transformerElement.qualifiedName}().${transformerMethod.simpleName}(${probableMatchFromTarget.fieldName}?.to${transformerMethod.parameters[0].asType().getPrimitiveDataType().capitalize()}())")
                                     isValidFieldTransformerFound = true
                                     firstVariableInConstructor = false
                                 }
