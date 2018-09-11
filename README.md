@@ -51,8 +51,8 @@ Add the library dependency to your build.gradle file.
 
 ```groovy
 dependencies {
-    implementation 'com.jmorph:jmorph-annotation:1.0.0'
-    annotationProcessor 'com.kmorph:kmorph-annotation:1.0.0'
+    implementation 'com.kmorph:kmorph-annotation:1.0.0'
+    annotationProcessor 'com.kmorph:kmorph-processor:1.0.0'
 }
 ```
 
