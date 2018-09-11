@@ -1,8 +1,8 @@
-package com.kmorph
+package com.kmorph.example3
 
 import java.math.BigInteger
 
-class StudentDTO {
+class TeacherDTO {
     var lastName: String = ""
     var firstName: String = ""
     var idNumber: BigInteger = BigInteger("1")
@@ -12,7 +12,7 @@ class StudentDTO {
     var departmentName: String = ""
     var supervisor: String = ""
     var workLocation: String = ""
-    var employeeType: Int = 1
+    var employeeType: Float? = 1.toFloat()
     var startDate: String = ""
     var endDate: String = ""
     var documentLink: String = ""

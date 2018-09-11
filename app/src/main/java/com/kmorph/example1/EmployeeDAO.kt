@@ -1,6 +1,8 @@
-package com.kmorph
+package com.kmorph.example1
 
 
+import com.kmorph.DepartmentIdToNameTransformer
+import com.kmorph.MillisToDateStringTransformer
 import com.kmorph.annotation.FieldTransformer
 import com.kmorph.annotation.MorphTo
 import com.kmorph.annotation.MorphToField
